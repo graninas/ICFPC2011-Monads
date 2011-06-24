@@ -166,6 +166,23 @@ fAttack (Just (FValue i):Just (FValue j):(Just (FValue n)):[]) = do
 					Nothing -> return Nothing
 fAttack _ = return Nothing
 
+fHelp (Just (FValue i):Just (FValue j):(Just (FValue n)):[]) = do
+				gd <- MST.get
+				let oldPropVit1 = vitality i gd True
+				let maybeNewPropGD1 = oldPropVit1 >>= (\(FValue v) -> if n > v then Nothing else Just $ FValue $ v - n) >>= (\y -> setSlotVitality i y gd)
+				case maybeNewPropGD1 of
+					Just newPropGD1 -> do
+						let oldPropVit2 = vitality j newPropGD1 True
+						let divided = div (n * 11) 10
+						let maybeNewPropGD2 = oldPropVit2 >>= (\(FValue v) -> if v + divided > 65535 then Just $ FValue 65535 else Just $ FValue $ v + divided) >>= (\y -> setSlotVitality j y newPropGD1)
+						case maybeNewPropGD2 of
+							Just newPropGD2 -> do
+								MST.put newPropGD2
+								x <- fI []
+								return x
+							Nothing -> return Nothing
+					Nothing -> return Nothing
+fHelp _ = return Nothing
 
 test1 = do
 			x <- fZero []
