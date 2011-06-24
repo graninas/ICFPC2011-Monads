@@ -42,16 +42,32 @@ currentPlayerSlots (GD slots _ Player0) = slots
 currentPlayerSlots (GD _ slots Player1) = slots
 
 
-field :: Int -> Slots -> Bool -> Maybe Function
-field i slots isAlive = do
+field :: Int -> GameData -> Bool -> Maybe Function
+field i (GD slots _ _) isAlive = do
 			case M.lookup i slots of
 				Just sl@(Slot _ field) -> case isSlotAlive sl == isAlive of
 											True -> Just field
 											False -> Nothing
 				Nothing -> Nothing
 
-vitality :: Int -> Slots -> Bool -> Maybe Function
-vitality i slots isAlive = do
+field' :: Int ->  GameData -> Bool -> Maybe Function
+field' i (GD _ slots _) isAlive = do
+			case M.lookup i slots of
+				Just sl@(Slot _ field) -> case isSlotAlive sl == isAlive of
+											True -> Just field
+											False -> Nothing
+				Nothing -> Nothing
+
+vitality :: Int -> GameData -> Bool -> Maybe Function
+vitality i (GD slots _ _) isAlive = do
+			case M.lookup i slots of
+				Just sl@(Slot v _) -> case isSlotAlive sl == isAlive of
+											True -> Just $ FValue v
+											False -> Nothing
+				Nothing -> Nothing
+				
+vitality' :: Int -> GameData -> Bool -> Maybe Function
+vitality' i (GD _ slots _) isAlive = do
 			case M.lookup i slots of
 				Just sl@(Slot v _) -> case isSlotAlive sl == isAlive of
 											True -> Just $ FValue v
@@ -63,6 +79,13 @@ setSlotVitality i (FValue newVit) gd@(GD slots _ _) =
 		case M.lookup i slots of
 			Just (Slot _ f) -> let updatedSl =  M.update (\x -> Just (Slot newVit f)) i slots in
 				Just $ gd {propSlots = updatedSl}
+			Nothing -> Nothing
+			
+setSlotVitality' :: Int -> Function -> GameData -> Maybe GameData
+setSlotVitality' i (FValue newVit) gd@(GD _ slots _) =
+		case M.lookup i slots of
+			Just (Slot _ f) -> let updatedSl =  M.update (\x -> Just (Slot newVit f)) i slots in
+				Just $ gd {opSlots = updatedSl}
 			Nothing -> Nothing
 
 fZero :: [Maybe Function] -> GS (Maybe Function)
@@ -85,7 +108,7 @@ fGet :: [Maybe Function] -> GS (Maybe Function)
 fGet (Just (FValue i):[]) =
 		do
 			gd <- MST.get
-			return $ field i (currentPlayerSlots gd) True
+			return $ field i gd True
 fGet _ = return Nothing
 
 fPut :: [Maybe Function] -> GS (Maybe Function)
@@ -103,10 +126,11 @@ fS (Just (FFunc f):Just (FFunc g):x:[]) = do
 
 fK ::  [Maybe Function] -> GS (Maybe Function)
 fK (x:_:[]) = return x
+fK _ = return Nothing
 
 fInc (Just (FValue i):[]) = do
 				gd <- MST.get
-				let oldVit = vitality i (currentPlayerSlots gd) True
+				let oldVit = vitality i gd True
 				let maybeNewGD = oldVit >>= (\(FValue v) -> if v < 65535 then Just $ FValue $ v + 1 else Just $ FValue v) >>= (\y -> setSlotVitality i y gd)
 				case maybeNewGD of
 					Just newGD -> do
@@ -114,8 +138,21 @@ fInc (Just (FValue i):[]) = do
 									x <- fI []
 									return x
 					Nothing -> return Nothing
+fInc _ = return Nothing
+
+fDec (Just (FValue i):[]) = do
+				gd <- MST.get
+				let oldVit = vitality' (255-i) (currentPlayerSlots gd) True
+				let maybeNewGD = oldVit >>= (\(FValue v) -> if v > 0 then Just $ FValue $ v - 1 else Just $ FValue v) >>= (\y -> setSlotVitality' (255-i) y gd)
+				case maybeNewGD of
+					Just newGD -> do
+									MST.put newGD
+									x <- fI []
+									return x
+					Nothing -> return Nothing
+fDec _ = return Nothing
 
 test1 = do
 			x <- fZero []
 			fI [x]
-test2 = [fI, fZero, fGet, fSucc]
+test2 = [fI, fZero, fSucc, fGet, fPut, fS, fK, fInc]
