@@ -10,9 +10,8 @@ data AppType = LeftApp | RightApp
 
 type Vitality = Int
 data Function = FValue Int
-			| I
-			| Get
-	deriving (Eq, Show, Read)
+				| FFunc CardFunction
+	deriving (Show, Read)
 
 type Field = Function
 data Slot = Slot Vitality Field
@@ -32,7 +31,7 @@ type GS a = (MST.StateT GameData Maybe a)
 
 type CardFunction = [Maybe Function] -> GS (Maybe Function)
 
-defaultSlot = Slot 10000 I
+defaultSlot = Slot 10000 (FFunc fI)
 defaultSlots = zip [0..255] (replicate 256 defaultSlot)
 
 isSlotAlive (Slot v _) = v > 0
