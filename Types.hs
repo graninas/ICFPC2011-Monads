@@ -230,8 +230,10 @@ fZombie (Just (FValue i):Just x:[]) = do
 									MST.put newGD
 									y <- fI []
 									return y
+					Nothing -> return Nothing
+fZombie _ = return Nothing
 
 test1 = do
 			x <- fZero []
 			fI [x]
-test2 = [fI, fZero, fSucc, fGet, fPut, fS, fK, fInc, fDec, fAttack]
+test2 = [fI, fZero, fSucc, fGet, fPut, fS, fK, fInc, fDec, fAttack, fHelp, fCopy, fRevive, fZombie]
