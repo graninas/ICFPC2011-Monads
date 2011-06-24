@@ -148,7 +148,26 @@ fDec (Just (FValue i):[]) = do
 					Nothing -> return Nothing
 fDec _ = return Nothing
 
+fAttack (Just (FValue i):Just (FValue j):(Just (FValue n)):[]) = do
+				gd <- MST.get
+				let oldPropVit = vitality i gd True
+				let maybeNewPropGD = oldPropVit >>= (\(FValue v) -> if n > v then Nothing else Just $ FValue $ v - n) >>= (\y -> setSlotVitality i y gd)
+				case maybeNewPropGD of
+					Just newPropGD -> do
+						let oldOpVit = vitality' (255-j) newPropGD True
+						let divided = div (n * 9) 10
+						let maybeNewOpGD = oldOpVit >>= (\(FValue v) -> if v - divided < 0 then Just $ FValue 0 else Just $ FValue $ v - divided) >>= (\y -> setSlotVitality' (255-j) y newPropGD)
+						case maybeNewOpGD of
+							Just newOpGD -> do
+								MST.put newOpGD
+								x <- fI []
+								return x
+							Nothing -> return Nothing
+					Nothing -> return Nothing
+fAttack _ = return Nothing
+
+
 test1 = do
 			x <- fZero []
 			fI [x]
-test2 = [fI, fZero, fSucc, fGet, fPut, fS, fK, fInc]
+test2 = [fI, fZero, fSucc, fGet, fPut, fS, fK, fInc, fDec, fAttack]
