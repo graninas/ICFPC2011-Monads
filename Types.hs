@@ -77,6 +77,15 @@ fGet (Just (FValue i):[]) =
 			return $ field i (currentPlayerSlots gd) True
 fGet _ = return Nothing
 
+fPut (_:[]) = do
+				x <- fI
+				return x
+				
+fS (f:g:x:[]) = do
+					h <- f [x]
+					y <- g [x]
+					z <- h [y]
+					return z
 
 test1 = do
 			x <- fZero []
