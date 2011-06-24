@@ -11,11 +11,9 @@ data AppType = LeftApp | RightApp
 type Vitality = Int
 data Function = FValue Int
 				| FFunc CardFunction
-	deriving (Show, Read)
 
 type Field = Function
 data Slot = Slot Vitality Field
-	deriving (Eq, Show, Read)
 
 type Slots = M.Map Int Slot
 
@@ -25,7 +23,6 @@ data Player = Player0 | Player1
 data GameData = GD {propSlots :: Slots,
 					opSlots :: Slots,
 					curPlayer :: Player}
-	deriving (Eq, Show, Read)
 
 type GS a = (MST.StateT GameData Maybe a)
 
@@ -53,38 +50,42 @@ field i slots isAlive = do
 											False -> Nothing
 				Nothing -> Nothing
 
-fZero :: CardFunction
+fZero :: [Maybe Function] -> GS (Maybe Function)
 fZero [] = return $ Just $ FValue 0
 fZero _  = return $ Nothing
 
-fI :: CardFunction
+fI :: [Maybe Function] -> GS (Maybe Function)
 fI (Just func:[]) = return $ Just $ func
 fI _ = return Nothing
 
-fSucc :: CardFunction
+fSucc :: [Maybe Function] -> GS (Maybe Function)
 fSucc (Just (FValue x):[]) = return $ Just $ FValue (x + 1)
 fSucc _ = return Nothing
 
-fDbl :: CardFunction
+fDbl :: [Maybe Function] -> GS (Maybe Function)
 fDbl (Just (FValue x):[]) = return $ Just $ FValue (x * 2)
 fDbl _ = return Nothing
 
-fGet :: CardFunction
+fGet :: [Maybe Function] -> GS (Maybe Function)
 fGet (Just (FValue i):[]) =
 		do
 			gd <- MST.get
 			return $ field i (currentPlayerSlots gd) True
 fGet _ = return Nothing
 
+fPut :: [Maybe Function] -> GS (Maybe Function)
 fPut (_:[]) = do
-				x <- fI
+				x <- fI []
 				return x
-				
-fS (f:g:x:[]) = do
+
+fS :: [Maybe Function] -> GS (Maybe Function)
+fS (Just (FFunc f):Just (FFunc g):x:[]) = do
 					h <- f [x]
 					y <- g [x]
-					z <- h [y]
-					return z
+					case h of
+						Just (FFunc h') -> h' [y]
+						Nothing -> return Nothing
+
 
 test1 = do
 			x <- fZero []
