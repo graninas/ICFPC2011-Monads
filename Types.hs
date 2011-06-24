@@ -17,6 +17,7 @@ data Function = FValue Int
 type Field = Function
 data Slot = Slot Vitality Field
 	deriving (Eq, Show, Read)
+
 type Slots = M.Map Int Slot
 
 data Player = Player0 | Player1
@@ -46,21 +47,22 @@ field i slots = do
 				Just (Slot v field) -> Just field
 				Nothing -> Nothing
 
-fE _ _ = Left "Error."
-
-fZero :: [Function] -> GS (Maybe Function)
+fZero :: [Maybe Function] -> GS (Maybe Function)
 fZero [] = return $ Just $ FValue 0
 fZero _  = return $ Nothing
 
-fI :: [Function] -> GS (Maybe Function)
-fI (func:[]) = return $ Just $ func
+fI :: [Maybe Function] -> GS (Maybe Function)
+fI (Just func:[]) = return $ Just $ func
 fI _ = return Nothing
 
-fGet :: [Function] -> GS (Maybe Function)
-fGet ((FValue i):[]) =
+fGet :: [Maybe Function] -> GS (Maybe Function)
+fGet (Just (FValue i):[]) =
 		do
 			gd <- MST.get
 			return $ field i (currentPlayerSlots gd)
 fGet _ = return Nothing
 
+test1 = do
+			x <- fZero []
+			fI [x]
 test2 = [fI, fZero, fGet]
