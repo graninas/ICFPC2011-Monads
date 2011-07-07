@@ -1,6 +1,6 @@
 Code for ICFPC 2011 "Lambda: The Gathering".
 
-Monads version with monad State and monad transformer. To unify cards-functions there is special data types.
+Monads version with monad State and monad transformer. To unify cards-functions there are special data types.
 
 Just for fun.
 
