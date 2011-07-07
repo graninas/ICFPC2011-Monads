@@ -1,0 +1,16 @@
+Code for ICFPC 2011 "Lambda: The Gathering".
+
+Monads version with monad State and monad transformer. To unify cards-functions there is special data types.
+
+Just for fun.
+
+Done: cards-functions (fI, fK, fGet, etc.)
+Undone: all other things :)
+	- function showing ("S(zero)(K(S(get)(I)))..."). This is a problem because recurcive datatype Function and it's part CardFunction.
+	- partial applying when function's arguments are undefined.
+	- ...
+
+	
+Author: Granin Alexandr
+graninas@gmail.com
+License: GNU GPLv3
