@@ -6,7 +6,7 @@ Just for fun.
 
 Done: cards-functions (fI, fK, fGet, etc.)
 Undone: all other things :)
-	- function showing ("S(zero)(K(S(get)(I)))..."). This is a problem because recurcive datatype Function and it's part CardFunction.
+	- function showing ("S(zero)(K(S(get)(I)))..."). This is a big problem because Function is recurcive data type having function in.
 	- partial applying when function's arguments are undefined.
 	- ...
 
